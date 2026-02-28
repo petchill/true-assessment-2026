@@ -1,9 +1,9 @@
 package main
 
 import (
-	_handler "recommendation-system/internal/handler"
-	_repository "recommendation-system/internal/repository"
-	_service "recommendation-system/internal/service"
+	_handler "recommendation-system/src/internal/handler"
+	_repository "recommendation-system/src/internal/repository"
+	_service "recommendation-system/src/internal/service"
 )
 
 func main() {

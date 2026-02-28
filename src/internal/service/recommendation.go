@@ -1,7 +1,7 @@
 package service
 
 import (
-	"recommendation-system/internal/model/interfaces"
+	"recommendation-system/src/internal/model/interfaces"
 )
 
 type recommendationService struct {

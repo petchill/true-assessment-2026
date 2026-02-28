@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"recommendation-system/internal/model/interfaces"
+	"recommendation-system/src/internal/model/interfaces"
 )
 
 type recommendationHandler struct {
