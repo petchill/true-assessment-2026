@@ -1,6 +1,15 @@
 # Recommendation Service
 ## Setup Instructions
 
+### How to run Seeding
+
+1. install go
+2. run command 
+```
+DATABASE_URL="host=localhost user=user password=password dbname=recommendations port=5432" go run ./migration/seeding/main.go ./migration/seeding/users.go ./migration/seeding/contents.go ./migration/seeding/user_watch_history.go
+```
+
+
 ## Architecture Overview
 ### High Level
 ![High Level Diagram](./documentation/diagrams/high_level_diagram.png)
