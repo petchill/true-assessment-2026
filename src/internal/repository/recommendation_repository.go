@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"log"
 	"recommendation-system/src/internal/model/entity"
 
 	"github.com/redis/go-redis/v9"
@@ -35,6 +36,7 @@ func (r *recommendationRepository) GetUserNeverSeenContent(ctx context.Context, 
 		Limit(100).
 		Find(&contents).Error
 	if err != nil {
+		log.Println("Error => ", err)
 		return []entity.Content{}, err
 	}
 
@@ -53,6 +55,7 @@ func (r *recommendationRepository) GetUserContentWatchedHistory(ctx context.Cont
 		Limit(50).
 		Find(&historyContents).Error
 	if err != nil {
+		log.Println("Error => ", err)
 		return nil, err
 	}
 

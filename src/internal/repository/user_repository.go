@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"log"
 	"recommendation-system/src/internal/model/entity"
 
 	"gorm.io/gorm"
@@ -25,6 +26,7 @@ func (r *userRepository) GetUserByID(ctx context.Context, userID int) (entity.Us
 		Where("id = ?", userID).
 		First(&user).Error
 	if err != nil {
+		log.Println("Error => ", err)
 		return entity.User{}, err
 	}
 

@@ -6,8 +6,8 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - DATABASE_URL="host=postgresql user=user password=password dbname=recommendations"
-      # - DATABASE_URL=postgresql://user:password@postgres:5432/recommendations
+      # - DATABASE_URL="host=postgresql user=user password=password dbname=recommendations"
+      - DATABASE_URL=postgresql://user:password@postgres:5432/recommendations
       - REDIS_URL=redis://redis:6379
     depends_on:
       - postgres

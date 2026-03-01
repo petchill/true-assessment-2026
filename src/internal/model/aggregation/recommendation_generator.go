@@ -42,10 +42,9 @@ func (rg *RecommendationGenerator) GenerateRecommendationContents(ctx context.Co
 		return recommendationContents, ErrModelInference
 	}
 
-	recommendations := make([]RecommendationContent, 0, len(contents))
 	for _, content := range contents {
 		score := scoreCalculator.CalculateContentScore(content, genrePreferences)
-		recommendations = append(recommendations, RecommendationContent{
+		recommendationContents = append(recommendationContents, RecommendationContent{
 			ContentID:       content.ID,
 			Title:           content.Title,
 			Genre:           content.Genre,
@@ -54,12 +53,12 @@ func (rg *RecommendationGenerator) GenerateRecommendationContents(ctx context.Co
 		})
 	}
 
-	sort.Slice(recommendations, func(i, j int) bool {
-		return recommendations[i].Score > recommendations[j].Score
+	sort.Slice(recommendationContents, func(i, j int) bool {
+		return recommendationContents[i].Score > recommendationContents[j].Score
 	})
 
-	if len(recommendations) > recommendationLimit {
-		recommendations = recommendations[:recommendationLimit]
+	if len(recommendationContents) > recommendationLimit {
+		recommendationContents = recommendationContents[:recommendationLimit]
 	}
 
 	return recommendationContents, nil
