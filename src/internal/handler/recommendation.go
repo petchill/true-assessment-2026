@@ -24,6 +24,7 @@ func NewRecommendationHandler(recommendationService interfaces.RecommendationSer
 
 func (h *recommendationHandler) RegisterRoutes(e *echo.Group) {
 	e.GET("/users/:userID/recommendations", h.GetUserRecommendations)
+	e.GET("/recommendations/batch", h.GetBatchRecommendation)
 
 }
 
@@ -74,6 +75,52 @@ func (h *recommendationHandler) GetUserRecommendations(c *echo.Context) error {
 		}
 
 		return c.JSON(statusCode, errObj)
+	}
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func (h *recommendationHandler) GetBatchRecommendation(c *echo.Context) error {
+	type Params struct {
+		Page  int `query:"page"`
+		Limit int `query:"limit"`
+	}
+
+	params := Params{
+		Page:  1,
+		Limit: 20,
+	}
+	if err := c.Bind(&params); err != nil {
+		errObj := _appErr.HttpResponseError{
+			Error:   "invalid_parameter",
+			Message: "Invalid query parameters",
+		}
+		return c.JSON(http.StatusBadRequest, errObj)
+	}
+
+	if params.Page <= 0 {
+		errObj := _appErr.HttpResponseError{
+			Error:   "invalid_parameter",
+			Message: "Invalid page parameter",
+		}
+		return c.JSON(http.StatusBadRequest, errObj)
+	}
+
+	if params.Limit < 0 || params.Limit > 100 {
+		errObj := _appErr.HttpResponseError{
+			Error:   "invalid_parameter",
+			Message: "Invalid limit parameter",
+		}
+		return c.JSON(http.StatusBadRequest, errObj)
+	}
+
+	response, err := h.recommendationService.GetBatchRecommendation(c.Request().Context(), params.Page, params.Limit)
+	if err != nil {
+		errObj := _appErr.HttpResponseError{
+			Error:   "internal_error",
+			Message: err.Error(),
+		}
+		return c.JSON(http.StatusInternalServerError, errObj)
 	}
 
 	return c.JSON(http.StatusOK, response)

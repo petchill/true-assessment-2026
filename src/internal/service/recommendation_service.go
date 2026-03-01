@@ -63,7 +63,7 @@ func (s *recommendationService) GetUserRecommendations(ctx context.Context, user
 	}, nil
 }
 
-func (s *recommendationService) getBatchRecommendation(ctx context.Context, page, limit int) (aggregation.BatchRecommendationResponse, error) {
+func (s *recommendationService) GetBatchRecommendation(ctx context.Context, page, limit int) (aggregation.BatchRecommendationResponse, error) {
 	userIDs, err := s.userRepository.GetAllUserIDs(ctx)
 	if err != nil {
 		return aggregation.BatchRecommendationResponse{}, err

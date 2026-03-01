@@ -7,4 +7,5 @@ import (
 
 type RecommendationService interface {
 	GetUserRecommendations(ctx context.Context, userID int, limit int) (aggregation.UserRecommendationResponse, error)
+	GetBatchRecommendation(ctx context.Context, page, limit int) (aggregation.BatchRecommendationResponse, error)
 }

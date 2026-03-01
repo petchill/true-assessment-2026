@@ -1,0 +1,1 @@
+GET http://localhost:8080/recommendations/batch?page=1&limit=10
