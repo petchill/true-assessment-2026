@@ -14,6 +14,11 @@ func (Content) TableName() string {
 	return "content"
 }
 
+func (c Content) GetRecencyFactory() float64 {
+	daySinceCreation := time.Since(c.CreatedAt).Hours() / 24
+	return 1 / (1 + (daySinceCreation / 365))
+}
+
 type HistoryContent struct {
 	ID        uint64    `gorm:"column:id"`
 	Genre     string    `gorm:"column:genre"`
