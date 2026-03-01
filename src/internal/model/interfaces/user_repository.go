@@ -7,4 +7,5 @@ import (
 
 type UserRepository interface {
 	GetUserByID(ctx context.Context, userID int) (entity.User, error)
+	GetAllUserIDs(ctx context.Context) ([]int, error)
 }
