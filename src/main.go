@@ -38,7 +38,8 @@ func main() {
 	e := utils.InitEchoApp()
 
 	recommendationRepository := _repository.NewRecommendationRepository(db, redisClient)
-	recommendationService := _service.NewRecommendationService(recommendationRepository)
+	userRepository := _repository.NewUserRepository(db)
+	recommendationService := _service.NewRecommendationService(recommendationRepository, userRepository)
 	recommendationHandler := _handler.NewRecommendationHandler(recommendationService)
 	recommendationHandler.RegisterRoutes(e.Group(""))
 
