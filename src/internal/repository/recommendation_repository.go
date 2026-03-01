@@ -20,7 +20,7 @@ func NewRecommendationRepository(db *gorm.DB, redisClient *redis.Client) *recomm
 	}
 }
 
-func (r *recommendationRepository) GetUserNeverSeenContent(ctx context.Context, userID int) []entity.Content {
+func (r *recommendationRepository) GetUserNeverSeenContent(ctx context.Context, userID int) ([]entity.Content, error) {
 	contents := []entity.Content{}
 	subQuery := r.db.WithContext(ctx).
 		Table("user_watch_history").
@@ -35,10 +35,10 @@ func (r *recommendationRepository) GetUserNeverSeenContent(ctx context.Context, 
 		Limit(100).
 		Find(&contents).Error
 	if err != nil {
-		return []entity.Content{}
+		return []entity.Content{}, err
 	}
 
-	return contents
+	return contents, nil
 }
 
 func (r *recommendationRepository) GetUserContentWatchedHistory(ctx context.Context, userID int) ([]entity.HistoryContent, error) {

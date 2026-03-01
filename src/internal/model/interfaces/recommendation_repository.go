@@ -6,6 +6,6 @@ import (
 )
 
 type RecommendationRepository interface {
-	GetUserNeverSeenContent(ctx context.Context, userID int) []entity.Content
+	GetUserNeverSeenContent(ctx context.Context, userID int) ([]entity.Content, error)
 	GetUserContentWatchedHistory(ctx context.Context, userID int) ([]entity.HistoryContent, error)
 }

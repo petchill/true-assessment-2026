@@ -8,23 +8,6 @@ import (
 type ScoreCalculator struct {
 }
 
-// func (c *ScoreCalculator) CalculateScore()
-
-type PreferenceMap map[string]float64
-
-func (c *ScoreCalculator) calculateGenrePreferenceWeight(mapCount map[string]int) PreferenceMap {
-	sum := 0
-	result := make(map[string]float64)
-	for _, v := range mapCount {
-		sum += v
-	}
-
-	for k, v := range mapCount {
-		result[k] = float64(v) / float64(sum)
-	}
-	return result
-}
-
 func (c *ScoreCalculator) CalculateContentScore(content entity.Content, preferenceMap PreferenceMap) float64 {
 	popularityComponent := content.PopularityScore * 0.4
 	genreBoost := preferenceMap[content.Genre] * 0.35

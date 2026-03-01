@@ -2,11 +2,11 @@ package aggregation
 
 type UserRecommendationResponse struct {
 	UserID          int                        `json:"user_id"`
-	Recommendations []RecommendationItem       `json:"recommendations"`
+	Recommendations []RecommendationContent    `json:"recommendations"`
 	Metadata        RecommendationResponseMeta `json:"metadata"`
 }
 
-type RecommendationItem struct {
+type RecommendationContent struct {
 	ContentID       uint64  `json:"content_id"`
 	Title           string  `json:"title"`
 	Genre           string  `json:"genre"`
