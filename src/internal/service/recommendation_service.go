@@ -6,6 +6,7 @@ import (
 	"log"
 	"recommendation-system/src/internal/model/aggregation"
 	"recommendation-system/src/internal/model/interfaces"
+	"sync"
 	"time"
 
 	"gorm.io/gorm"
@@ -140,24 +141,38 @@ func getSummary(results []aggregation.BatchRecommendationResult, processingTime 
 
 func (s *recommendationService) getBatchResultFromUserIDs(ctx context.Context, userIDs []int) []aggregation.BatchRecommendationResult {
 	result := []aggregation.BatchRecommendationResult{}
+	ch := make(chan aggregation.BatchRecommendationResult)
+	var wg sync.WaitGroup
 	for _, userID := range userIDs {
-		recommendations, err := s.getUserRecommendations(ctx, userID, 50)
-		if err != nil {
-			batch := aggregation.BatchRecommendationResult{
-				UserID:  userID,
-				Status:  aggregation.BatchStatusFailed,
-				Error:   err.Error(),
-				Message: err.Error(), // TODO: change it later
+		wg.Add(1)
+		go func() {
+			recommendations, err := s.getUserRecommendations(ctx, userID, 50)
+			if err != nil {
+				batch := aggregation.BatchRecommendationResult{
+					UserID:  userID,
+					Status:  aggregation.BatchStatusFailed,
+					Error:   err.Error(),
+					Message: err.Error(), // TODO: change it later
+				}
+				ch <- batch
+			} else {
+				batch := aggregation.BatchRecommendationResult{
+					UserID:          userID,
+					Status:          aggregation.BatchStatusSuccess,
+					Recommendations: recommendations,
+				}
+				ch <- batch
 			}
-			result = append(result, batch)
-			continue
-		}
-		batch := aggregation.BatchRecommendationResult{
-			UserID:          userID,
-			Status:          aggregation.BatchStatusSuccess,
-			Recommendations: recommendations,
-		}
-		result = append(result, batch)
+			wg.Done()
+		}()
+	}
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	for v := range ch {
+		result = append(result, v)
 	}
 	return result
 }
