@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"log"
 	"recommendation-system/src/internal/model/aggregation"
 	"recommendation-system/src/internal/model/interfaces"
 	"time"
@@ -42,7 +43,16 @@ func (s *recommendationService) getUserRecommendations(ctx context.Context, user
 }
 
 func (s *recommendationService) GetUserRecommendations(ctx context.Context, userID int, limit int) (aggregation.UserRecommendationResponse, error) {
-	_, err := s.userRepository.GetUserByID(ctx, userID)
+	chacheReponse, found, err := s.recommendationRepository.GetUserRecommendationCache(ctx, userID, limit)
+	if err != nil {
+		log.Println("Warning: Get User Recommendation from cache error due to ", err.Error())
+	}
+	if found {
+		return chacheReponse, nil
+	}
+
+	// if no cache
+	_, err = s.userRepository.GetUserByID(ctx, userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return aggregation.UserRecommendationResponse{}, errors.New("user not found")
@@ -52,7 +62,7 @@ func (s *recommendationService) GetUserRecommendations(ctx context.Context, user
 	}
 	recommendations, err := s.getUserRecommendations(ctx, userID, limit)
 
-	return aggregation.UserRecommendationResponse{
+	response := aggregation.UserRecommendationResponse{
 		UserID:          userID,
 		Recommendations: recommendations,
 		Metadata: aggregation.RecommendationResponseMeta{
@@ -60,7 +70,22 @@ func (s *recommendationService) GetUserRecommendations(ctx context.Context, user
 			GeneratedAt: time.Now().UTC().Format(time.RFC3339),
 			TotalCount:  len(recommendations),
 		},
-	}, nil
+	}
+
+	err = s.recommendationRepository.SetUserRecommendationCache(ctx, userID, limit, response)
+	if err != nil {
+		log.Println("Warning: Set User Recommendation to cache error due to ", err.Error())
+	}
+
+	return response, nil
+}
+
+func (s *recommendationService) InsertUserWatchHistory(ctx context.Context, userID int, contentID int) error {
+	if err := s.recommendationRepository.TruncateUserRecommendationCache(ctx, userID); err != nil {
+		return err
+	}
+
+	return s.recommendationRepository.InsertUserWatchHistory(ctx, userID, contentID)
 }
 
 func (s *recommendationService) GetBatchRecommendation(ctx context.Context, page, limit int) (aggregation.BatchRecommendationResponse, error) {
