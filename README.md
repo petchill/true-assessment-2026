@@ -13,7 +13,7 @@ DATABASE_URL="host=localhost user=user password=password dbname=recommendations 
 ### How to run application
 
 1. cd to root folder
-2. run command docker compose up --build (if don't have docker, install docker first)
+2. run command `docker compose up --build` (if don't have docker, install docker first)
 
 ## How to run k6 test
 
@@ -78,8 +78,14 @@ this diagram indicate about overview flow how to get the recommendation
 
 ## Design Decision
 
+### Cache
+- Cache only user recommendation response by userID and limit. TTL is set at 10 mins as required.
 ### Concurrency Approach
 - I used wait group and channel to prevent the deadlock as see in `src/internal/model/aggregation/recommendation_generator.go`
+- In batch Recommendation use context.timeout and catch it when timeout, if timeout, it gonna return error of model_inference_timeout
+### Error Handling
+- In HTTPs level, using http status code to return meaningful response such as 400 for bad request and etc.
+- In App level use AppErrors struct from file `/utils/error` to contain ErrorCode which can implement and customize error message later in the future.
 
 ## Performance Results
 
