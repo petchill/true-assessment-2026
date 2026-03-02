@@ -6,6 +6,7 @@ import (
 	"log"
 	"recommendation-system/src/internal/model/aggregation"
 	"recommendation-system/src/internal/model/interfaces"
+	_appErr "recommendation-system/src/utils/error"
 	"sync"
 	"time"
 
@@ -62,6 +63,9 @@ func (s *recommendationService) GetUserRecommendations(ctx context.Context, user
 		return aggregation.UserRecommendationResponse{}, err
 	}
 	recommendations, err := s.getUserRecommendations(ctx, userID, limit)
+	if err != nil {
+		return aggregation.UserRecommendationResponse{}, err
+	}
 
 	response := aggregation.UserRecommendationResponse{
 		UserID:          userID,
@@ -146,24 +150,45 @@ func (s *recommendationService) getBatchResultFromUserIDs(ctx context.Context, u
 	for _, userID := range userIDs {
 		wg.Add(1)
 		go func() {
-			recommendations, err := s.getUserRecommendations(ctx, userID, 50)
-			if err != nil {
-				batch := aggregation.BatchRecommendationResult{
-					UserID:  userID,
-					Status:  aggregation.BatchStatusFailed,
-					Error:   err.Error(),
-					Message: err.Error(), // TODO: change it later
+			finish := make(chan aggregation.BatchRecommendationResult, 1)
+			// timeout 2 sec
+			ctx, _ := context.WithTimeout(context.Background(), time.Second*2)
+			go func() {
+				recommendations, err := s.getUserRecommendations(ctx, userID, 50)
+				if err != nil {
+					batch := aggregation.BatchRecommendationResult{
+						UserID:  userID,
+						Status:  aggregation.BatchStatusFailed,
+						Error:   err.Error(),
+						Message: err.Error(), // TODO: change it later
+					}
+					finish <- batch
+				} else {
+					batch := aggregation.BatchRecommendationResult{
+						UserID:          userID,
+						Status:          aggregation.BatchStatusSuccess,
+						Recommendations: recommendations,
+					}
+					finish <- batch
 				}
-				ch <- batch
-			} else {
-				batch := aggregation.BatchRecommendationResult{
-					UserID:          userID,
-					Status:          aggregation.BatchStatusSuccess,
-					Recommendations: recommendations,
+			}()
+			select {
+			case <-ctx.Done():
+				{
+					batch := aggregation.BatchRecommendationResult{
+						UserID:  userID,
+						Status:  aggregation.BatchStatusFailed,
+						Error:   "model_inference_timeout",
+						Message: _appErr.ErrModelInferenceTimeout.Message(), // TODO: change it later
+					}
+					ch <- batch
 				}
-				ch <- batch
+			case batch := <-finish:
+				{
+					ch <- batch
+					wg.Done()
+				}
 			}
-			wg.Done()
 		}()
 	}
 	go func() {

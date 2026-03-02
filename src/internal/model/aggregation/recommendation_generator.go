@@ -5,6 +5,7 @@ import (
 	"errors"
 	"math/rand/v2"
 	"recommendation-system/src/internal/model/entity"
+	_appErr "recommendation-system/src/utils/error"
 	"sort"
 	"time"
 )
@@ -39,7 +40,7 @@ func (rg *RecommendationGenerator) GenerateRecommendationContents(ctx context.Co
 	}
 
 	if randomFloat64Fn() < 0.015 {
-		return recommendationContents, ErrModelInference
+		return recommendationContents, _appErr.Wrap(500, _appErr.ErrModelInference, _appErr.ErrModelInference.Message(), errors.New("model_inference_failed"))
 	}
 
 	for _, content := range contents {
