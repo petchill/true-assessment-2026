@@ -1,4 +1,7 @@
 # Recommendation Service
+
+## Overview
+This project is about to create the recommendation related to the requirement on `Software Engineer_Assignment_1-2026.pdf` file
 ## Setup Instructions
 
 ### How to run Seeding
